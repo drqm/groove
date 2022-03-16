@@ -6,12 +6,12 @@ end
 addpath(genpath('/home/knight/groove/scripts'));
 
 %% 2. define parameters
-pos1 = [1 45 1144 1200]; % to resize ft_databrowser
-pos2 = [1145 45 1144 2400];
+pos1 = [1 45 1144 900]; % to resize ft_databrowser
+pos2 = [900 45 1144 2400];
 
 %% 3. get subjects and specify blocks
 block = 1; 
-sub_code = 1;
+sub_code = 2;
 
 [SBJs, ~] = get_subjects();
 SBJ = SBJs{sub_code};
@@ -19,7 +19,7 @@ SBJ = SBJs{sub_code};
 datadir = sprintf('/home/knight/WashU/data/BerkeleyGrooveTask/%s/BerkeleyGrooveTask/ECOG%03d/',SBJ,block);
 datafiles = dir([datadir,'*.dat']);
 %% 4. load data
-filename = fullfile(datadir,datafiles(1).name);
+filename = fullfile(datadir,datafiles(2).name);
 hdr = ft_read_header(filename);
 fsOrig = hdr.Fs;
 

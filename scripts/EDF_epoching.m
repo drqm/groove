@@ -20,7 +20,7 @@ sub_code = 1;
 [SBJs,chtypes] = get_subjects();
 SBJ = SBJs{sub_code};
 
-chantypeix = chtypes.ix{sub_code}; % select iEEG channels
+chantypeix = chtypes.ix{1}; % select iEEG channels
 chantypes = chtypes.type;
 
 datadir = sprintf('/home/knight/WashU/data/BerkeleyGrooveTask/%s/BerkeleyGrooveTask/ECOG%03d/',SBJ,block);

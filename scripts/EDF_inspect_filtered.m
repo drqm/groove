@@ -7,44 +7,46 @@ addpath(genpath('/home/knight/groove/scripts'));
 
 %% 2. define parameters
 HPcutoff = 1; % high-pass filter cutoff
-LPcutoff = 250;%250; % low-pass filter cutoff
+LPcutoff = 250; % low-pass filter cutoff
 pos1 = [1 45 1144 900]; % to resize ft_databrowser
 pos2 = [1145 45 1144 2400];
 
 %% get subjects
-sub_code = 2;
-block = 1;
-session = 1;
-[SBJs,chtypes] = get_subjects();
-SBJ = SBJs{sub_code};
+data_folder = '/home/knight/ecog/DATA_FOLDER/';
+site = 'Loma_Linda';
+SBJ = 'LL08';
+%[SBJs,chtypes] = get_subjects();
+%SBJ = SBJs{sub_code};
 
-chantypeix = chtypes.ix{sub_code}; % select iEEG channels
-chantypes = chtypes.type;
+%chantypeix = chtypes.ix{1}; % select iEEG channels
+%chantypes = chtypes.type;
+%
 
-datadir = sprintf('/home/knight/WashU/data/BerkeleyGrooveTask/%s/BerkeleyGrooveTask/ECOG%03d/',SBJ,session);%,block);
-datafiles = dir([datadir,'*.dat']);
-modelname = sprintf('/home/knight/WashU/data/_MODEL/%s',SBJ);
+%modelname = sprintf('/home/knight/WashU/data/_MODEL/%s',SBJ);
 
 %% 3. load data
-filename = fullfile(datadir,datafiles(block).name);
-%hdr = ft_read_header(filename);
+filename = fullfile(data_folder,site,SBJ,'/Datafiles/DAY3/LL09-DAY3-ALL.EDF');
+hdr0 = ft_read_header(filename);
+%filename = fullfile(datadir,datafiles(1).name);
+hdr = ft_read_header(filename,'chanindx', length(hdr0.label) + 1);
 %fsOrig = hdr.Fs;
 
 cfg = [];
 cfg.dataset = filename;
+cfg.channel = 'EDF Annotations';
+cfg.method = 'channel';
 %cfg.trl = trl;
 data = ft_preprocessing(cfg);
 %%
-fsOrig = data.fsample;
-if fsOrig > 1000
-    cfg = [];
-    cfg.resamplefs = 1000;
-    data = ft_resampledata(cfg, data);
-end
+% if fsOrig > 1000
+%     cfg = [];
+%     cfg.resamplefs = 1000;
+%     data = ft_resampledata(cfg, data);
+% end
 
 %% 4. parse data
 cfg = [];
-cfg.channel = chantypeix{strcmp(chantypes,'sEEG')};
+cfg.channel = chantypeix{strcmp(chantypes,'iEEG')};
 data = ft_selectdata(cfg, data);
 
 %% 5. swap raw labels for anatomical labels
@@ -71,7 +73,7 @@ data = ft_preprocessing(cfg, data);
 cfg = [];
 cfg.viewmode = 'vertical';
 cfg.preproc.demean = 'yes';
-cfg.blocksize = 8;
+cfg.blocksize = 16;
 cfg.position = pos1;
 cfg.ylim = [-1 1]*50;
 cfg.channel = data.label(1:100);
