@@ -11,7 +11,7 @@ pos2 = [900 45 1144 2400];
 
 %% 3. get subjects and specify blocks
 block = 1; 
-sub_code = 1;
+sub_code = ;
 
 [SBJs, ~] = get_subjects();
 SBJ = SBJs{sub_code};
