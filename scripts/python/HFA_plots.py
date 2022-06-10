@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from get_subjects import get_subjects
 from mne_epoching import channel_selection
+import pandas as pd
 
 
 def HFA_single_electrode_plot(sbj, HFA_power, electrode_ind, sfreq):
@@ -20,7 +20,9 @@ def HFA_single_electrode_plot(sbj, HFA_power, electrode_ind, sfreq):
 	
 	fig, ax = plt.subplots(figsize=(20,10))
 
-	_, chantype = get_subjects()
+	# _, chantype = get_subjects()
+	wd = '/home/knight/dquiroga/groove/data'
+	chantype = pd.read_csv(os.path.join(wd,'Groove_subject_info.csv'))
 	electrode_names, invert_idx = channel_selection(sbj, chantype)
 	_, _, n_timepoints = HFA_power.shape
 	tmax = int(n_timepoints/sfreq)
