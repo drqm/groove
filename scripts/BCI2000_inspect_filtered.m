@@ -13,7 +13,7 @@ pos2 = [1145 45 1144 2400];
 
 %% get subjects
 sub_code = 2;
-block = 1;
+block = 2;
 session = 1;
 [SBJs,chtypes] = get_subjects();
 SBJ = SBJs{sub_code};
@@ -48,10 +48,10 @@ cfg.channel = chantypeix{strcmp(chantypes,'sEEG')};
 data = ft_selectdata(cfg, data);
 
 %% 5. swap raw labels for anatomical labels
-load(modelname);
-electrodeNames = cellfun(@(x) split(x, '-'), electrodeNames, 'UniformOutput', false);
-electrodeNames = cellfun(@(x) [x{1}(3:end) '_' x{end}], electrodeNames, 'UniformOutput', false);
-data.label = electrodeNames;
+% load(modelname);
+% electrodeNames = cellfun(@(x) split(x, '-'), electrodeNames, 'UniformOutput', false);
+% electrodeNames = cellfun(@(x) [x{1}(3:end) '_' x{end}], electrodeNames, 'UniformOutput', false);
+% data.label = electrodeNames;
 
 %% 6. filter out power line noise and detrend
 powerLineF0 = 60;

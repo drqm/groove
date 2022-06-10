@@ -10,16 +10,17 @@ pos1 = [1 45 1144 900]; % to resize ft_databrowser
 pos2 = [900 45 1144 2400];
 
 %% 3. get subjects and specify blocks
-block = 1; 
+block = 2; 
 sub_code = 1;
 
 [SBJs, ~] = get_subjects();
 SBJ = SBJs{sub_code};
 
-datadir = sprintf('/home/knight/WashU/data/BerkeleyGrooveTask/%s/BerkeleyGrooveTask/ECOG%03d/',SBJ,block);
+%datadir = sprintf('/home/knight/WashU/data/BerkeleyGrooveTask/%s/BerkeleyGrooveTask/ECOG001',SBJ);
+datadir = '/home/knight/WashU/data/BerkeleyGrooveTask/SLCH002/BerkeleyGrooveTask/ECOG001/';
 datafiles = dir([datadir,'*.dat']);
 %% 4. load data
-filename = fullfile(datadir,datafiles(2).name);
+filename = fullfile(datadir,datafiles(block).name);
 hdr = ft_read_header(filename);
 fsOrig = hdr.Fs;
 

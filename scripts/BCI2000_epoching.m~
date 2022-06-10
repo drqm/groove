@@ -52,7 +52,7 @@ tmax = 16;
 trigger_ix = find(diff(hdr.orig.states.StimulusCode)~=0);
 event_vals = double(hdr.orig.states.StimulusCode(trigger_ix));
 trigger_ix = trigger_ix(ismember(event_vals,5:28));
-event_vals = event_vals(ismember(event_vals,5:28));
+event_v als = event_vals(ismember(event_vals,5:28));
 
 trl = [trigger_ix + tmin*fsOrig,...
        trigger_ix + tmax*fsOrig,...
