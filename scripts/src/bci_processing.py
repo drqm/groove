@@ -47,17 +47,20 @@ def bci_fetch_montage(elec_path, fs_subjects_dir, fs_subject):
     elecs = os.listdir(elec_path)
     ch_coords={}
     for e in elecs:
+        print('loading elc info {}'.format(elec_path + '/' + e))
         f = open(elec_path + '/' + e, "r")
         lines = f.readlines()
         lines = lines[0:-3]
-        for lidx, l in enumerate(lines):
+        lidx = 0
+        for l in lines:
             if l != '\n':
+                lidx = lidx+1
                 #transform to voxel coordinates
                 ccoords = np.round(mne.transforms.apply_trans(ras_to_vox,np.array(l[0:-2].split(), dtype='float'))).astype(int)
                 #transform to mri coordinates
                 ccoords = mne.transforms.apply_trans(vox_to_mri,ccoords)
                 # convert to meters and store
-                ch_coords[e[0] + str(lidx + 1)] = ccoords/1000
+                ch_coords[e[0] + str(lidx)] = ccoords/1000
      
     print('transforming to common MNI-TAL space')            
     # make a montage from electrode positions
@@ -70,7 +73,7 @@ def bci_fetch_montage(elec_path, fs_subjects_dir, fs_subject):
 
 def get_events(sig, srate, selection=[]):
     """This function extracts events from BCI2000 states,
-    typically SimulusCode or KeyDown.
+    typically StimulusCode or KeyDown.
     
     Parameters
     ----------
@@ -103,7 +106,7 @@ def get_events(sig, srate, selection=[]):
     return events, times
 
 def bci2bids(SBJ, bids_root, bci_file, fs_subjects_dir, fs_subject,
-             ch_info_file, elec_path, event_selection = [],
+             ch_info_file, elec_path, run=None, event_selection = [],
              response_selection=[], overwrite=False):
     """This function converts a BCI2000 .dat file into BIDS format
     with an .edf extension for the task 'groove' and a given block.
@@ -130,6 +133,8 @@ def bci2bids(SBJ, bids_root, bci_file, fs_subjects_dir, fs_subject,
         Path to the folder where electrode coordinates are located.
         One file per shaft is read. This path is input to the function
         "bci_fetch_montage".
+    run: int
+        Specify the current run of the task
     event_selection: array, list
         Set of codes to be selected from the "StimulusCode" BCI2000 state.
         If left blank, all events recorded will be selected. This parameter
@@ -145,9 +150,11 @@ def bci2bids(SBJ, bids_root, bci_file, fs_subjects_dir, fs_subject,
     raw: mne.Raw object with the converted data.
     """
     #Load channel information
+    print('loading channel info {}'.format(ch_info_file))
     ch_info = pd.read_csv(ch_info_file, delimiter='\t')
        
     # obtain sampling rate, events and responses
+    print('loading sampling frequency, key presses and events')
     with b2k.BCI2kReader(bci_file) as test:
         sfreq = test.parameters['SamplingRate']
         key_press = test.states['KeyDown']
@@ -158,6 +165,8 @@ def bci2bids(SBJ, bids_root, bci_file, fs_subjects_dir, fs_subject,
     info['description'] = 'Data acquired and loaded with BCI2000'
     info['line_freq'] = 60
     montage = bci_fetch_montage(elec_path, fs_subjects_dir, fs_subject)
+    print('created montage with channel names: ')
+    print(montage.ch_names)
     info.set_montage(montage,on_missing='warn')
     
     ## Fix montage for EEG electrodes
@@ -173,27 +182,27 @@ def bci2bids(SBJ, bids_root, bci_file, fs_subjects_dir, fs_subject,
         stim = test.parameters['Stimuli'][0]
         
     if 'instructions1' in stim:
-        task = 'GrooveWantingToMove'
+        crun = 'GrooveWantingToMove'
     elif 'instructions2' in stim:
-        task = 'GrooveLiking'
+        crun = 'GrooveLiking'
         
-    print('current block is {}'.format(task))
+    print('current block is {}'.format(crun))
     # Adding annotations, triggers and responses
     print('adding triggers, annotations and responses')
     triggers, tonsets = get_events(sig=triggers, srate=sfreq,selection=event_selection)
     responses, ronsets = get_events(sig=key_press, srate=sfreq,selection=response_selection)
-    raw.annotations.append(onset=0.01,duration=0, description=task + '_start')
-    raw.annotations.append(onset=raw.times[-1] - 0.01, duration=0, description=task + '_end')
+    raw.annotations.append(onset=0.01,duration=0, description=crun + '_start')
+    raw.annotations.append(onset=raw.times[-1] - 0.01, duration=0, description=crun + '_end')
     raw.annotations.append(onset=tonsets,duration=0, description= ['SoundOnset_' + str(trig) for trig in triggers])
     raw.annotations.append(onset=ronsets,duration=0, description=['Response_' + str(resp) for resp in responses])
     
     montage = raw.get_montage()
     print('writing to bids')
     # make sure BIDS root is not erased
-    if os.path.exists(bids_root):
-        shutil.rmtree(bids_root)
+    #if os.path.exists(bids_root):
+    #    shutil.rmtree(bids_root)
         
-    bids_path = BIDSPath(subject=SBJ,root=bids_root,task=task) 
+    bids_path = BIDSPath(subject=SBJ,root=bids_root,task=crun,run=run) 
     write_raw_bids(raw, bids_path, anonymize=dict(daysback=40000),
                    montage=montage, acpc_aligned=True, overwrite=overwrite,
                    allow_preload=True, format='EDF')
